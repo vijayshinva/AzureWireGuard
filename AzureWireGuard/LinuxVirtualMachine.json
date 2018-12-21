@@ -1,0 +1,459 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "User name for the Virtual Machine."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine."
+      }
+    },
+    "dnsNameForPublicIP": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Globally unique DNS Name for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "ubuntuOSVersion": {
+      "type": "string",
+      "defaultValue": "14.04.2-LTS",
+      "allowedValues": [
+        "12.04.5-LTS",
+        "14.04.2-LTS"
+      ],
+      "metadata": {
+        "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS."
+      }
+    }
+  },
+  "variables": {
+    "imagePublisher": "Canonical",
+    "imageOffer": "UbuntuServer",
+    "OSDiskName": "osdiskforlinuxsimple",
+    "nicName": "myVMNic",
+    "addressPrefix": "10.0.0.0/16",
+    "subnetName": "Subnet",
+    "subnetPrefix": "10.0.0.0/24",
+    "vhdStorageType": "Standard_LRS",
+    "publicIPAddressType": "Dynamic",
+    "vhdStorageContainerName": "vhds",
+    "vmName": "MyUbuntuVM",
+    "vmSize": "Standard_D2_v2",
+    "virtualNetworkName": "MyVNET",
+    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
+    "vhdStorageAccountName": "[concat('vhdstorage', uniqueString(resourceGroup().id))]",
+    "diagnosticsStorageAccountName": "[variables('vhdStorageAccountName')]",
+    "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('vhdStorageAccountName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "StorageAccount"
+      },
+      "sku": {
+        "name": "[variables('vhdStorageType')]"
+      },
+      "kind": "Storage"
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('dnsNameForPublicIP')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "PublicIPAddress"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "VirtualNetwork"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "NetworkInterface"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "VirtualMachine"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('vhdStorageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[parameters('ubuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('vhdStorageAccountName')), '2016-01-01').primaryEndpoints.blob, variables('vhdStorageContainerName'), '/', variables('OSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "name": "Microsoft.Insights.VMDiagnosticsSettings",
+          "apiVersion": "2016-03-30",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "AzureDiagnostics"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.OSTCExtensions",
+            "type": "LinuxDiagnostic",
+            "typeHandlerVersion": "2.3",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "ladCfg": {
+                "diagnosticMonitorConfiguration": {
+                  "performanceCounters": {
+                    "performanceCounterConfiguration": [
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "AvailableMemory",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PercentAvailableMemory",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "UsedMemory",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PercentUsedMemory",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PercentUsedByCache",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PagesPerSec",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PagesReadPerSec",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PagesWrittenPerSec",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "AvailableSwap",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PercentAvailableSwap",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "UsedSwap",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Memory",
+                        "counterSpecifier": "PercentUsedSwap",
+                        "table": "LinuxMemory"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentIdleTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentUserTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentNiceTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentPrivilegedTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentInterruptTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentDPCTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentProcessorTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "Processor",
+                        "counterSpecifier": "PercentIOWaitTime",
+                        "table": "LinuxProcessor"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "BytesPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "ReadBytesPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "WriteBytesPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "TransfersPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "ReadsPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "WritesPerSecond",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "AverageReadTime",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "AverageWriteTime",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "AverageTransferTime",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "PhysicalDisk",
+                        "counterSpecifier": "AverageDiskQueueLength",
+                        "table": "LinuxPhysicalDisk"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "BytesTransmitted",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "BytesReceived",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "PacketsTransmitted",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "PacketsReceived",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "BytesTotal",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "TotalRxErrors",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "TotalTxErrors",
+                        "table": "LinuxNetworkInterface"
+                      },
+                      {
+                        "namespace": "root/scx",
+                        "class": "NetworkInterface",
+                        "counterSpecifier": "TotalCollisions",
+                        "table": "LinuxNetworkInterface"
+                      }
+                    ]
+                  },
+                  "metrics": {
+                    "resourceId": "[variables('ladMetricsResourceId')]",
+                    "metricAggregation": [
+                      {
+                        "scheduledTransferPeriod": "PT1H"
+                      },
+                      {
+                        "scheduledTransferPeriod": "PT1M"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "protectedSettings": {
+              "storageAccountName": "[variables('diagnosticsStorageAccountName')]",
+              "storageAccountKey": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagnosticsStorageAccountName')), '2016-01-01').keys[0].value]"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
