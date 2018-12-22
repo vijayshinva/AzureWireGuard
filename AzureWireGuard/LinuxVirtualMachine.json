@@ -5,6 +5,7 @@
     "adminUsername": {
       "type": "string",
       "minLength": 1,
+      "defaultValue": "vmadmin",
       "metadata": {
         "description": "User name for the Virtual Machine."
       }
@@ -15,63 +16,60 @@
         "description": "Password for the Virtual Machine."
       }
     },
-    "dnsNameForPublicIP": {
+    "_artifactsLocation": {
       "type": "string",
-      "minLength": 1,
       "metadata": {
-        "description": "Globally unique DNS Name for the Public IP used to access the Virtual Machine."
+        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
       }
     },
-    "ubuntuOSVersion": {
-      "type": "string",
-      "defaultValue": "14.04.2-LTS",
-      "allowedValues": [
-        "12.04.5-LTS",
-        "14.04.2-LTS"
-      ],
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
       "metadata": {
-        "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS."
+        "description": "Auto-generated token to access _artifactsLocation"
       }
     }
   },
   "variables": {
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
-    "OSDiskName": "osdiskforlinuxsimple",
-    "nicName": "myVMNic",
+    "ubuntuOSVersion": "18.04-LTS",
+    "dnsNameForPublicIP": "[uniqueString(resourceGroup().id)]",
+    "OSDiskName": "[uniqueString(resourceGroup().id)]",
+    "nicName": "[uniqueString(resourceGroup().id)]",
     "addressPrefix": "10.0.0.0/16",
-    "subnetName": "Subnet",
+    "subnetName": "[uniqueString(resourceGroup().id)]",
     "subnetPrefix": "10.0.0.0/24",
-    "vhdStorageType": "Standard_LRS",
+    "diagnosticsStorageType": "Standard_LRS",
     "publicIPAddressType": "Dynamic",
-    "vhdStorageContainerName": "vhds",
-    "vmName": "MyUbuntuVM",
-    "vmSize": "Standard_D2_v2",
-    "virtualNetworkName": "MyVNET",
+    "vmName": "[uniqueString(resourceGroup().id)]",
+    "vmSize": "Standard_B2s",
+    "virtualNetworkName": "[uniqueString(resourceGroup().id)]",
+    "vmOSDiskName": "[uniqueString(resourceGroup().id)]",
     "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
-    "vhdStorageAccountName": "[concat('vhdstorage', uniqueString(resourceGroup().id))]",
-    "diagnosticsStorageAccountName": "[variables('vhdStorageAccountName')]",
-    "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+    "diagnosticsStorageAccountName": "[uniqueString(resourceGroup().id)]",
+    "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+    "AzureWireGuardScriptFolder": "CustomScripts",
+    "AzureWireGuardScriptFileName": "AzureWireGuard.sh"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('vhdStorageAccountName')]",
+      "name": "[variables('diagnosticsStorageAccountName')]",
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "StorageAccount"
       },
       "sku": {
-        "name": "[variables('vhdStorageType')]"
+        "name": "[variables('diagnosticsStorageType')]"
       },
       "kind": "Storage"
     },
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[parameters('dnsNameForPublicIP')]",
+      "name": "[variables('dnsNameForPublicIP')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "PublicIPAddress"
@@ -79,7 +77,7 @@
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
         "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+          "domainNameLabel": "[variables('dnsNameForPublicIP')]"
         }
       }
     },
@@ -116,7 +114,7 @@
         "displayName": "NetworkInterface"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ],
       "properties": {
@@ -126,7 +124,7 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]"
               },
               "subnet": {
                 "id": "[variables('subnetRef')]"
@@ -137,7 +135,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
@@ -145,7 +143,6 @@
         "displayName": "VirtualMachine"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('vhdStorageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
       ],
       "properties": {
@@ -161,14 +158,11 @@
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
             "offer": "[variables('imageOffer')]",
-            "sku": "[parameters('ubuntuOSVersion')]",
+            "sku": "[variables('ubuntuOSVersion')]",
             "version": "latest"
           },
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('vhdStorageAccountName')), '2016-01-01').primaryEndpoints.blob, variables('vhdStorageContainerName'), '/', variables('OSDiskName'), '.vhd')]"
-            },
+            "name": "[variables('vmOSDiskName')]",
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -182,6 +176,31 @@
         }
       },
       "resources": [
+        {
+          "name": "AzureWireGuard",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2016-03-30",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+          ],
+          "tags": {
+            "displayName": "AzureWireGuard"
+          },
+          "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.0",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "skipDos2Unix": false,
+              "fileUris": [
+                "[concat(parameters('_artifactsLocation'), '/', variables('AzureWireGuardScriptFolder'), '/', variables('AzureWireGuardScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+              ],
+              "commandToExecute": "[concat('bash ', variables('AzureWireGuardScriptFileName'), ' ', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))).dnsSettings.fqdn, ' ', parameters('adminUsername'))]"
+            }
+          }
+        },
         {
           "type": "extensions",
           "name": "Microsoft.Insights.VMDiagnosticsSettings",
