@@ -33,7 +33,7 @@
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "ubuntuOSVersion": "18.04-LTS",
-    "resourceName": "[uniqueString(resourceGroup().id, deployment().name)]",
+    "resourceName": "[uniqueString(subscription().subscriptionId, resourceGroup().id)]",
     "addressPrefix": "10.0.0.0/16",
     "subnetPrefix": "10.0.0.0/24",
     "diagnosticsStorageType": "Standard_LRS",
@@ -70,7 +70,7 @@
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
         "dnsSettings": {
-          "domainNameLabel": "[concat('awg', variables('resourceName'))]"
+          "domainNameLabel": "[variables('resourceName')]"
         }
       }
     },
