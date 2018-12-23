@@ -33,29 +33,22 @@
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "ubuntuOSVersion": "18.04-LTS",
-    "dnsNameForPublicIP": "[uniqueString(resourceGroup().id)]",
-    "OSDiskName": "[uniqueString(resourceGroup().id)]",
-    "nicName": "[uniqueString(resourceGroup().id)]",
+    "resourceName": "[uniqueString(resourceGroup().id, deployment().name)]",
     "addressPrefix": "10.0.0.0/16",
-    "subnetName": "[uniqueString(resourceGroup().id)]",
     "subnetPrefix": "10.0.0.0/24",
     "diagnosticsStorageType": "Standard_LRS",
     "publicIPAddressType": "Dynamic",
-    "vmName": "[uniqueString(resourceGroup().id)]",
     "vmSize": "Standard_B2s",
-    "virtualNetworkName": "[uniqueString(resourceGroup().id)]",
-    "vmOSDiskName": "[uniqueString(resourceGroup().id)]",
-    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
-    "diagnosticsStorageAccountName": "[uniqueString(resourceGroup().id)]",
-    "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('resourceName'))]",
+    "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('resourceName'))]",
     "AzureWireGuardScriptFolder": "CustomScripts",
     "AzureWireGuardScriptFileName": "AzureWireGuard.sh"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('diagnosticsStorageAccountName')]",
+      "name": "[variables('resourceName')]",
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -69,7 +62,7 @@
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('dnsNameForPublicIP')]",
+      "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "PublicIPAddress"
@@ -77,14 +70,14 @@
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
         "dnsSettings": {
-          "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+          "domainNameLabel": "[concat('awg', variables('resourceName'))]"
         }
       }
     },
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworkName')]",
+      "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "VirtualNetwork"
@@ -97,7 +90,7 @@
         },
         "subnets": [
           {
-            "name": "[variables('subnetName')]",
+            "name": "[variables('resourceName')]",
             "properties": {
               "addressPrefix": "[variables('subnetPrefix')]"
             }
@@ -108,14 +101,14 @@
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
+      "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "NetworkInterface"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -124,7 +117,7 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
               },
               "subnet": {
                 "id": "[variables('subnetRef')]"
@@ -137,20 +130,20 @@
     {
       "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
+      "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "VirtualMachine"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('resourceName'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
         "osProfile": {
-          "computerName": "[variables('vmName')]",
+          "computerName": "[variables('resourceName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -162,7 +155,7 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "[variables('vmOSDiskName')]",
+            "name": "[variables('resourceName')]",
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -170,7 +163,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('resourceName'))]"
             }
           ]
         }
@@ -182,7 +175,7 @@
           "location": "[resourceGroup().location]",
           "apiVersion": "2016-03-30",
           "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+            "[resourceId('Microsoft.Compute/virtualMachines', variables('resourceName'))]"
           ],
           "tags": {
             "displayName": "AzureWireGuard"
@@ -197,7 +190,7 @@
               "fileUris": [
                 "[concat(parameters('_artifactsLocation'), '/', variables('AzureWireGuardScriptFolder'), '/', variables('AzureWireGuardScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ],
-              "commandToExecute": "[concat('bash ', variables('AzureWireGuardScriptFileName'), ' ', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))).dnsSettings.fqdn, ' ', parameters('adminUsername'))]"
+              "commandToExecute": "[concat('bash ', variables('AzureWireGuardScriptFileName'), ' ', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))).dnsSettings.fqdn, ' ', parameters('adminUsername'))]"
             }
           }
         },
@@ -210,7 +203,7 @@
             "displayName": "AzureDiagnostics"
           },
           "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+            "[resourceId('Microsoft.Compute/virtualMachines', variables('resourceName'))]"
           ],
           "properties": {
             "publisher": "Microsoft.OSTCExtensions",
@@ -467,8 +460,8 @@
               }
             },
             "protectedSettings": {
-              "storageAccountName": "[variables('diagnosticsStorageAccountName')]",
-              "storageAccountKey": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagnosticsStorageAccountName')), '2016-01-01').keys[0].value]"
+              "storageAccountName": "[variables('resourceName')]",
+              "storageAccountKey": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('resourceName')), '2016-01-01').keys[0].value]"
             }
           }
         }

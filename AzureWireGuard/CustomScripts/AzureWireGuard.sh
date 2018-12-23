@@ -17,27 +17,28 @@ apt-get install wireguard -y
 
 ## Configure WireGuard
 # Generate security keys
+mkdir /home/$2/WireGuardSecurityKeys
 umask 077
-wg genkey | tee /home/$2/server_private_key | wg pubkey > /home/$2/server_public_key
-wg genkey | tee /home/$2/client_one_private_key | wg pubkey > /home/$2/client_one_public_key
-wg genkey | tee /home/$2/client_two_private_key | wg pubkey > /home/$2/client_two_public_key
-wg genkey | tee /home/$2/client_three_private_key | wg pubkey > /home/$2/client_three_public_key
-wg genkey | tee /home/$2/client_four_private_key | wg pubkey > /home/$2/client_four_public_key
-wg genkey | tee /home/$2/client_five_private_key | wg pubkey > /home/$2/client_five_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/server_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/server_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_one_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_one_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_two_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_two_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_three_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_three_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_four_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_four_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_five_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_five_public_key
 
 # Generate configuration files
-server_private_key=$(</home/$2/server_private_key)
-server_public_key=$(</home/$2/server_public_key)
-client_one_private_key=$(</home/$2/client_one_private_key)
-client_one_public_key=$(</home/$2/client_one_public_key)
-client_two_private_key=$(</home/$2/client_two_private_key)
-client_two_public_key=$(</home/$2/client_two_public_key)
-client_three_private_key=$(</home/$2/client_three_private_key)
-client_three_public_key=$(</home/$2/client_three_public_key)
-client_four_private_key=$(</home/$2/client_four_private_key)
-client_four_public_key=$(</home/$2/client_four_public_key)
-client_five_private_key=$(</home/$2/client_five_private_key)
-client_five_public_key=$(</home/$2/client_five_public_key)
+server_private_key=$(</home/$2/WireGuardSecurityKeys/server_private_key)
+server_public_key=$(</home/$2/WireGuardSecurityKeys/server_public_key)
+client_one_private_key=$(</home/$2/WireGuardSecurityKeys/client_one_private_key)
+client_one_public_key=$(</home/$2/WireGuardSecurityKeys/client_one_public_key)
+client_two_private_key=$(</home/$2/WireGuardSecurityKeys/client_two_private_key)
+client_two_public_key=$(</home/$2/WireGuardSecurityKeys/client_two_public_key)
+client_three_private_key=$(</home/$2/WireGuardSecurityKeys/client_three_private_key)
+client_three_public_key=$(</home/$2/WireGuardSecurityKeys/client_three_public_key)
+client_four_private_key=$(</home/$2/WireGuardSecurityKeys/client_four_private_key)
+client_four_public_key=$(</home/$2/WireGuardSecurityKeys/client_four_public_key)
+client_five_private_key=$(</home/$2/WireGuardSecurityKeys/client_five_private_key)
+client_five_public_key=$(</home/$2/WireGuardSecurityKeys/client_five_public_key)
 
 # Server Config
 cat > /etc/wireguard/wg0.conf << EOF
@@ -104,6 +105,54 @@ EOF
 
 chmod go+r /home/$2/wg0-client-two.conf
 
+cat > /home/$2/wg0-client-three.conf << EOF
+[Interface]
+PrivateKey = $client_three_private_key
+Address = 10.13.13.103/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-three.conf
+
+cat > /home/$2/wg0-client-four.conf << EOF
+[Interface]
+PrivateKey = $client_four_private_key
+Address = 10.13.13.104/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-four.conf
+
+cat > /home/$2/wg0-client-five.conf << EOF
+[Interface]
+PrivateKey = $client_five_private_key
+Address = 10.13.13.105/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-five.conf
+
 ## Firewall 
 ufw allow 51820/udp
 ufw allow 22/tcp
@@ -115,4 +164,6 @@ systemctl enable wg-quick@wg0
 
 ## Upgrade
 apt-get full-upgrade -y
-reboot
+
+## Shutdown 
+shutdown -r 1440
