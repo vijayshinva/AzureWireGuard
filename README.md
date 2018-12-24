@@ -25,7 +25,7 @@ The quickest way to setup your own modern VPN server.
 - Generate five client configuration files, which you can download and start using. 
     - The five clients are given the IP addresses 10.13.13.101, 10.13.13.102, 10.13.13.103, 10.13.13.104 and 10.13.13.105.
     - The Client DNS server is set to [1.1.1.1][dns].
-- Enable UFW firewall.
+- Enable [UFW][ufw] firewall.
 - Install Ubuntu Server Upgrades.
 - Schedule a Reboot after 24 hours, to ensure all Ubuntu Server Upgrades are applied.
 
@@ -74,3 +74,4 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful.
 [azure-portal]: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-portal
 [azure-deploy-awg]: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fvijayshinva%2FAzureWireGuard%2Fmaster%2FAzureWireGuard%2FLinuxVirtualMachine.json
 [azure-rg]: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview#resource-groups
+[ufw]: https://help.ubuntu.com/community/UFW
