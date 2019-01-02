@@ -25,7 +25,11 @@ wg genkey | tee /home/$2/WireGuardSecurityKeys/client_two_private_key | wg pubke
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_three_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_three_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_four_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_four_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_five_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_five_public_key
-
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_one_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_six_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_two_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_seven_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_three_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_eight_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_four_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_nine_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_five_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_ten_public_key
 # Generate configuration files
 server_private_key=$(</home/$2/WireGuardSecurityKeys/server_private_key)
 server_public_key=$(</home/$2/WireGuardSecurityKeys/server_public_key)
@@ -39,6 +43,16 @@ client_four_private_key=$(</home/$2/WireGuardSecurityKeys/client_four_private_ke
 client_four_public_key=$(</home/$2/WireGuardSecurityKeys/client_four_public_key)
 client_five_private_key=$(</home/$2/WireGuardSecurityKeys/client_five_private_key)
 client_five_public_key=$(</home/$2/WireGuardSecurityKeys/client_five_public_key)
+client_six_private_key=$(</home/$2/WireGuardSecurityKeys/client_six_private_key)
+client_six_public_key=$(</home/$2/WireGuardSecurityKeys/client_six_public_key)
+client_seven_private_key=$(</home/$2/WireGuardSecurityKeys/client_seven_private_key)
+client_seven_public_key=$(</home/$2/WireGuardSecurityKeys/client_seven_public_key)
+client_eight_private_key=$(</home/$2/WireGuardSecurityKeys/client_eight_private_key)
+client_eight_public_key=$(</home/$2/WireGuardSecurityKeys/client_eight_public_key)
+client_nine_private_key=$(</home/$2/WireGuardSecurityKeys/client_nine_private_key)
+client_nine_public_key=$(</home/$2/WireGuardSecurityKeys/client_nine_public_key)
+client_ten_private_key=$(</home/$2/WireGuardSecurityKeys/client_ten_private_key)
+client_ten_public_key=$(</home/$2/WireGuardSecurityKeys/client_ten_public_key)
 
 # Server Config
 cat > /etc/wireguard/wg0.conf << EOF
@@ -70,10 +84,29 @@ AllowedIps = 10.13.13.104/32
 PublicKey =  $client_five_public_key
 AllowedIps = 10.13.13.105/32
 
+[Peer]
+PublicKey =  $client_six_public_key
+AllowedIps = 10.13.13.106/32
+
+[Peer]
+PublicKey =  $client_seven_public_key
+AllowedIps = 10.13.13.107/32
+
+[Peer]
+PublicKey =  $client_eight_public_key
+AllowedIps = 10.13.13.108/32
+
+[Peer]
+PublicKey =  $client_nine_public_key
+AllowedIps = 10.13.13.109/32
+
+[Peer]
+PublicKey =  $client_ten_public_key
+AllowedIps = 10.13.13.110/32
 EOF
 
 # Client Configs
-cat > /home/$2/wg0-client-one.conf << EOF
+cat > /home/$2/wg0-client-1.conf << EOF
 [Interface]
 PrivateKey = $client_one_private_key
 Address = 10.13.13.101/32
@@ -87,9 +120,9 @@ PersistentKeepAlive = 25
 
 EOF
 
-chmod go+r /home/$2/wg0-client-one.conf
+chmod go+r /home/$2/wg0-client-1.conf
 
-cat > /home/$2/wg0-client-two.conf << EOF
+cat > /home/$2/wg0-client-2.conf << EOF
 [Interface]
 PrivateKey = $client_two_private_key
 Address = 10.13.13.102/32
@@ -103,9 +136,9 @@ PersistentKeepAlive = 25
 
 EOF
 
-chmod go+r /home/$2/wg0-client-two.conf
+chmod go+r /home/$2/wg0-client-2.conf
 
-cat > /home/$2/wg0-client-three.conf << EOF
+cat > /home/$2/wg0-client-3.conf << EOF
 [Interface]
 PrivateKey = $client_three_private_key
 Address = 10.13.13.103/32
@@ -119,9 +152,9 @@ PersistentKeepAlive = 25
 
 EOF
 
-chmod go+r /home/$2/wg0-client-three.conf
+chmod go+r /home/$2/wg0-client-3.conf
 
-cat > /home/$2/wg0-client-four.conf << EOF
+cat > /home/$2/wg0-client-4.conf << EOF
 [Interface]
 PrivateKey = $client_four_private_key
 Address = 10.13.13.104/32
@@ -135,9 +168,9 @@ PersistentKeepAlive = 25
 
 EOF
 
-chmod go+r /home/$2/wg0-client-four.conf
+chmod go+r /home/$2/wg0-client-4.conf
 
-cat > /home/$2/wg0-client-five.conf << EOF
+cat > /home/$2/wg0-client-5.conf << EOF
 [Interface]
 PrivateKey = $client_five_private_key
 Address = 10.13.13.105/32
@@ -151,7 +184,87 @@ PersistentKeepAlive = 25
 
 EOF
 
-chmod go+r /home/$2/wg0-client-five.conf
+chmod go+r /home/$2/wg0-client-5.conf
+
+cat > /home/$2/wg0-client-6.conf << EOF
+[Interface]
+PrivateKey = $client_six_private_key
+Address = 10.13.13.106/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-6.conf
+
+cat > /home/$2/wg0-client-7.conf << EOF
+[Interface]
+PrivateKey = $client_seven_private_key
+Address = 10.13.13.107/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-7.conf
+
+cat > /home/$2/wg0-client-8.conf << EOF
+[Interface]
+PrivateKey = $client_eight_private_key
+Address = 10.13.13.108/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-8.conf
+
+cat > /home/$2/wg0-client-9.conf << EOF
+[Interface]
+PrivateKey = $client_nine_private_key
+Address = 10.13.13.109/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-9.conf
+
+cat > /home/$2/wg0-client-10.conf << EOF
+[Interface]
+PrivateKey = $client_ten_private_key
+Address = 10.13.13.110/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey =  $server_public_key
+EndPoint = $1:51820
+AllowedIps = 0.0.0.0/0, ::/0
+PersistentKeepAlive = 25
+
+EOF
+
+chmod go+r /home/$2/wg0-client-10.conf
 
 ## Firewall 
 ufw allow 51820/udp

@@ -22,8 +22,8 @@ The quickest way to setup your own modern VPN server.
 - Setup NAT on the server to forward client traffic to the internet.
 - Start the WireGuard Interface.
 - Configure WireGuard to auto start.
-- Generate five client configuration files, which you can download and start using. 
-    - The five clients are given the IP addresses 10.13.13.101, 10.13.13.102, 10.13.13.103, 10.13.13.104 and 10.13.13.105.
+- Generate ten client configuration files, which you can download and start using. 
+    - The ten clients are given the IP addresses 10.13.13.101 to 10.13.13.110.
     - The Client DNS server is set to [1.1.1.1][dns].
 - Enable [UFW][ufw] firewall.
 - Install Ubuntu Server Upgrades.
@@ -42,23 +42,27 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful.
 - There are multiple ways to deploy an Azure ARM template like  [Powershell][azure-ps], [Azure CLI][azure-cli], [Azure Portal][azure-portal] and [REST API][azure-rest].
 
 # How to download WireGuard Client Configuration files ?
-- The client configuration files are named wg0-client-one.conf, wg0-client-two.conf, wg0-client-three.conf, wg0-client-four.conf and wg0-client-five.conf.
+- The client configuration files are named wg0-client-1.conf, wg0-client-2.conf, ..., wg0-client-9.conf and wg0-client-10.conf.
 - They are located in the administrator users home folder (~/).
 - You can use tools like scp and pscp to download the client configuration files directly from the server.
     
-    scp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-one.conf /local/dir/
+    scp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf /local/dir/
     
-    pscp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-one.conf c:\local\
+    pscp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf c:\local\
 
     Example: 
 
-    scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client-one.conf /local/dir/
+    scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client-1.conf /local/dir/
+	scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/
+
 # Windows Clients
 - The client configuration files generated have Linux Line Endings (LF) while Windows WireGuard clients would expect DOS Line Endings (CRLF).
 
 # General Recommendations
 - Recommended to have a separate [Azure Resource Group][azure-rg] for this deployment so that when you want to destroy the setup you can easily delete the Azure Resource Group and all the associated Azure resources are removed.
 - Recommended to have a VM with atleast two cores.
+- Once the configuration files are downloaded, you can disable the SSH port 22 on the Azure Network Security Group for added security.
+- [Azure Accelerated Networking][azure-accelerated-nw] is enabled by default for better network performance, this limits the choice of Azure VM sizes.
 
 [azure-arm]: https://docs.microsoft.com/en-us/azure/azure-resource-manager/
 [wireguard]: https://www.wireguard.com/
@@ -75,3 +79,4 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful.
 [azure-deploy-awg]: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fvijayshinva%2FAzureWireGuard%2Fmaster%2FAzureWireGuard%2FLinuxVirtualMachine.json
 [azure-rg]: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview#resource-groups
 [ufw]: https://help.ubuntu.com/community/UFW
+[azure-accelerated-nw]: https://docs.microsoft.com/en-us/azure/virtual-network/create-vm-accelerated-networking-cli

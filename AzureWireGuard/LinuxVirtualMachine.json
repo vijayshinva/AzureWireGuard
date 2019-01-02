@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {
@@ -38,7 +38,7 @@
     "subnetPrefix": "10.0.0.0/24",
     "diagnosticsStorageType": "Standard_LRS",
     "publicIPAddressType": "Dynamic",
-    "vmSize": "Standard_B2s",
+    "vmSize": "Standard_DS2_v2",
     "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]",
     "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('resourceName'))]",
     "ladMetricsResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('resourceName'))]",
@@ -49,7 +49,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('resourceName')]",
-      "apiVersion": "2016-01-01",
+      "apiVersion": "2018-07-01",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "StorageAccount"
@@ -60,7 +60,48 @@
       "kind": "Storage"
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-01-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('resourceName')]",
+      "tags": {
+        "displayName": "NetworkSecurityGroup"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "wireguard_51820",
+            "properties": {
+              "description": "Allow Wireguard 51820",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "51820",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1001,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ssh_22",
+            "properties": {
+              "description": "Allow SSH 22",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1002,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-08-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
@@ -75,7 +116,7 @@
       }
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-08-01",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
@@ -99,7 +140,7 @@
       }
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-08-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
@@ -108,7 +149,8 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('resourceName'))]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -124,11 +166,15 @@
               }
             }
           }
-        ]
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('resourceName'))]"
+        },
+        "enableAcceleratedNetworking": true
       }
     },
     {
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2018-10-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('resourceName')]",
       "location": "[resourceGroup().location]",
