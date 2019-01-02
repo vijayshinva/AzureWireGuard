@@ -16,22 +16,26 @@ apt-get install linux-headers-$(uname -r) -y
 apt-get install wireguard -y
 
 ## Configure WireGuard
+
 # Generate security keys
 mkdir /home/$2/WireGuardSecurityKeys
 umask 077
 wg genkey | tee /home/$2/WireGuardSecurityKeys/server_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/server_public_key
+wg genpsk > /home/$2/WireGuardSecurityKeys/preshared_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_one_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_one_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_two_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_two_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_three_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_three_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_four_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_four_public_key
 wg genkey | tee /home/$2/WireGuardSecurityKeys/client_five_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_five_public_key
-wg genkey | tee /home/$2/WireGuardSecurityKeys/client_one_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_six_public_key
-wg genkey | tee /home/$2/WireGuardSecurityKeys/client_two_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_seven_public_key
-wg genkey | tee /home/$2/WireGuardSecurityKeys/client_three_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_eight_public_key
-wg genkey | tee /home/$2/WireGuardSecurityKeys/client_four_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_nine_public_key
-wg genkey | tee /home/$2/WireGuardSecurityKeys/client_five_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_ten_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_six_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_six_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_seven_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_seven_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_eight_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_eight_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_nine_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_nine_public_key
+wg genkey | tee /home/$2/WireGuardSecurityKeys/client_ten_private_key | wg pubkey > /home/$2/WireGuardSecurityKeys/client_ten_public_key
+
 # Generate configuration files
 server_private_key=$(</home/$2/WireGuardSecurityKeys/server_private_key)
+preshared_key=$(</home/$2/WireGuardSecurityKeys/preshared_key)
 server_public_key=$(</home/$2/WireGuardSecurityKeys/server_public_key)
 client_one_private_key=$(</home/$2/WireGuardSecurityKeys/client_one_private_key)
 client_one_public_key=$(</home/$2/WireGuardSecurityKeys/client_one_public_key)
@@ -66,42 +70,52 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING 
 
 [Peer]
 PublicKey =  $client_one_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.101/32
 
 [Peer]
 PublicKey =  $client_two_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.102/32
 
 [Peer]
 PublicKey =  $client_three_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.103/32
 
 [Peer]
 PublicKey =  $client_four_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.104/32
 
 [Peer]
 PublicKey =  $client_five_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.105/32
 
 [Peer]
 PublicKey =  $client_six_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.106/32
 
 [Peer]
 PublicKey =  $client_seven_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.107/32
 
 [Peer]
 PublicKey =  $client_eight_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.108/32
 
 [Peer]
 PublicKey =  $client_nine_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.109/32
 
 [Peer]
 PublicKey =  $client_ten_public_key
+PresharedKey = $preshared_key
 AllowedIps = 10.13.13.110/32
 EOF
 
@@ -114,6 +128,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -130,6 +145,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -146,6 +162,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -162,6 +179,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -178,6 +196,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -194,6 +213,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -210,6 +230,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -226,6 +247,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -242,6 +264,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
@@ -258,6 +281,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $server_public_key
+PresharedKey = $preshared_key
 EndPoint = $1:51820
 AllowedIps = 0.0.0.0/0, ::/0
 PersistentKeepAlive = 25
