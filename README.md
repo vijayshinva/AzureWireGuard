@@ -14,6 +14,7 @@ The quickest way to setup your own modern VPN server.
 - Create an [Ubuntu Server][ubuntu] Virtual Machine.
     - The only inputs you provide are the administrator username and password.
     - The name of all resources are generated automatically to avoid any conflicts.
+- An Azure Network Security Group with firewall rules is attached to the Virtual Machine.
 - Install WireGuard Server.
 - Configure WireGuard Server
     - Create Private and Public Keys for Server and Client.
@@ -52,7 +53,6 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful.
 
     Example: 
 
-    scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client-1.conf /local/dir/
 	scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/
 
 # Windows Clients
