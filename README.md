@@ -43,7 +43,7 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful. A
 - Hit the [Deploy to Azure][azure-deploy-awg] button at the top. 
 - Fill the necessary parameters along with _artifactsLocation and _artifactsLocationSasToken from above and hit the Purchase button.
 
-[![Shared access signature](http://vijayshinva.github.io/img/posts/azurewireguard-sas.png){:height="25%" width="25%"}](http://vijayshinva.github.io/img/posts/azurewireguard-sas.png)
+[![Shared access signature](http://vijayshinva.github.io/img/posts/azurewireguard-sas.png | width=100)](http://vijayshinva.github.io/img/posts/azurewireguard-sas.png)
 [![Azure Deploy](http://vijayshinva.github.io/img/posts/azurewireguard-portal.png){:height="25%" width="25%"}](http://vijayshinva.github.io/img/posts/azurewireguard-portal.png)
 
 ## Other Methods
