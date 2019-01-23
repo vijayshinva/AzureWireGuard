@@ -31,13 +31,20 @@ The quickest way to setup your own modern VPN server.
 - Schedule a Reboot after 24 hours, to ensure all Ubuntu Server Upgrades are applied.
 
 # How to deploy ?
-Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful.
+Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful. Azure ARM needs a Storage Account (_artifactsLocation) with access controlled via a Shared access signature (_artifactsLocationSasToken), to upload this template while deploying. If you use Visual Studio this Storage Account is created automatically in the Resource Group called ARM_Deploy_Staging.
+
 ## Method 1 - From [Visual Studio][vs]
 - Clone the [git repository][git-repo].
 - Open the solution file in Visual Studio and deploy from Visual Studio.
 
 ## Method 2 - From [Azure Deploy][azure-deploy]
+- Create a storage account (you can also use an existing one) for ARM to upload this template. (_artifactsLocation)
+- Create a Shared access signature (SAS Token) for that storage account with full permissions. (_artifactsLocationSasToken)
 - Hit the [Deploy to Azure][azure-deploy-awg] button at the top. 
+- Fill the necessary parameters along with _artifactsLocation and _artifactsLocationSasToken from above and hit the Purchase button.
+
+[![Shared access signature](/img/posts/azurewireguard-sas.png){:height="25%" width="25%"}](/img/posts/azurewireguard-sas.png)
+[![Azure Deploy](/img/posts/azurewireguard-portal.png){:height="25%" width="25%"}](/img/posts/azurewireguard-portal.png)
 
 ## Other Methods
 - There are multiple ways to deploy an Azure ARM template like  [Powershell][azure-ps], [Azure CLI][azure-cli], [Azure Portal][azure-portal] and [REST API][azure-rest].
