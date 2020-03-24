@@ -71,6 +71,15 @@ Some knowledge of how [Azure ARM templates][azure-arm] work is really helpful. A
 - Once the configuration files are downloaded, you can disable the SSH port 22 on the Azure Network Security Group for added security.
 - [Azure Accelerated Networking][azure-accelerated-nw] is enabled by default for better network performance, this limits the choice of Azure VM sizes.
 
+# Contributing
+- Fork the repo on [GitHub][git-repo]
+- Clone the project to your own machine
+- Commit changes to your own branch
+- Push your work back up to your fork
+- Submit a Pull Request so that changes can be reviewed and merged
+
+NOTE: Be sure to pull the latest from "upstream" before making a pull request!
+
 [azure-arm]: https://docs.microsoft.com/en-us/azure/azure-resource-manager/
 [wireguard]: https://www.wireguard.com/
 [dns]: https://1.1.1.1/
