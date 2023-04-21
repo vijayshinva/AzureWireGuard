@@ -71,13 +71,13 @@ Some knowledge of how [Azure Bicep templates][azure-bicep] work is really helpfu
 - They are located in the administrator users home folder (~/).
 - You can use tools like scp and pscp to download the client configuration files directly from the server.
     
-    `scp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf /local/dir/`
+    `scp <admin-user>@<server-fqdn>:/home/<admin-user>/wg0-client-1.conf /local/dir/`
     
-    `pscp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf c:\local\`
+    `pscp <admin-user>@<server-fqdn>:/home/<admin-user>/wg0-client-1.conf c:\local\`
 
     Example: 
 
-	`scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/`
+	`scp vmadmin@pip-wg-j5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/`
 
 # Windows Clients
 - The client configuration files generated have Linux Line Endings (LF) while Windows WireGuard clients would expect DOS Line Endings (CRLF).
