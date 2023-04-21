@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "code": {
+      "value": "xeaaf7dc"
+    },
+    "adminUsername": {
+      "value": "vmadmin"
+    },
+    "adminPassword": {
+      "value": "A_Really_Str0ng_P@ssw0rd"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "tags": {
+      "value": {
+        "Workload": "AzureWireGuard",
+        "ApplicationName": "WireGuard",
+        "DataClassification": "Confidential"
+      }
+    }
+  }
+}
