@@ -1,12 +1,13 @@
+param timeStamp string = utcNow('u')
 param location string = 'eastus'
-param code string = uniqueString(subscription().id, location)
+param code string = substring(uniqueString(subscription().id, location), 0, 5)
 param tags object = {}
 param vmSize string = 'Standard_DS2_v2'
 @maxLength(16)
 param adminUsername string = 'vmadmin'
+@minLength(12)
 @secure()
 param adminPassword string
-param timeStamp string = utcNow('u')
 
 targetScope = 'subscription'
 

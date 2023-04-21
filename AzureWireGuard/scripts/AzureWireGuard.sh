@@ -302,5 +302,9 @@ systemctl enable wg-quick@wg0
 ## Upgrade
 apt-get full-upgrade -y
 
+## Clean Up
+apt-get autoremove -y
+apt-get clean
+
 ## Shutdown 
 shutdown -r 1440

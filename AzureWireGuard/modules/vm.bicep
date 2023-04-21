@@ -57,7 +57,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
   }
 }
 
-resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = {
+resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-11-01' = {
   name: 'vm-wg-${code}'
   location: location
   tags: tags
@@ -116,15 +116,26 @@ resource runCmd 'Microsoft.Compute/virtualMachines/runCommands@2022-11-01' = {
   name: 'run-wg-${code}'
   location: location
   tags: tags
-  parent: vm
+  parent: virtualMachine
   properties: {
-    asyncExecution: true
+    asyncExecution: false
+    parameters: [
+      {
+        name: ''
+        value: publicIPAddress.properties.dnsSettings.fqdn
+      }
+      {
+        name: ''
+        value: adminUsername
+      }
+    ]
+    runAsUser: 'root'
     source: {
       script: loadTextContent('../scripts/AzureWireGuard.sh')
     }
   }
 }
 
-output id string = vm.id
-output name string = vm.name
+output id string = virtualMachine.id
+output name string = virtualMachine.name
 output fqdn string = publicIPAddress.properties.dnsSettings.fqdn
