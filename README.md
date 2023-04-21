@@ -3,7 +3,7 @@ The quickest way to setup your own modern VPN server.
 
 [WireGuard][wireguard] VPN is a rethink of how VPN software are designed and is receiving genuine appreciation from the community. This [Azure Bicep template][azure-bicep] helps you to setup a WireGuard VPN server quickly, taking care of all the configuration steps. 
 
-# What does this Azure ARM template do ?
+# What does this Azure Bicep template do ?
 - Create an [Azure Resource Group][azure-rg]. The name of all resources are generated automatically to avoid any conflicts.
 - Create an [Ubuntu Server][ubuntu] Virtual Machine.
     - You will be prompted for a password during the setup. The default admin name is `vmadmin`
@@ -53,29 +53,31 @@ Some knowledge of how [Azure Bicep templates][azure-bicep] work is really helpfu
 # Customizing the deployment
 - While deploying the Bicep template you can pass a parameters file
 
-    `az deployment sub create --name wireguard --location eastus --template-file .\AzureWireGuard\AzureWireGuard.bicep --parameters "@AzureWireGuard.parameters.json"`
+    `az deployment sub create --name wireguard --location eastus --template-file .\AzureWireGuard\AzureWireGuard.bicep --parameters "@AzureWireGuard\AzureWireGuard.parameters.json"`
 
 - The template parameters available for customization are
 
-|Parameter|Description|Default|
-|---------|-----------|-------|
-|code|A string used in the resource names| Random string to avoid resource conflicts|
-|adminUsername| Admin Username for the Virtual Machine| vmadmin|
-|adminPassword| Password for the Virtual Machine Admin| Prompts during deployment|
-|location| Location to deploy the resources. The location specified in the `az deployment` command does not control the location of the resources. It is the location of the Azure Deployment| eastus
-|tags| Tags that are attached to the resources created|Workload, ApplicationName, DataClassification, DeployedOn
+| Parameter | Description | Defaults |
+| --------- | ----------- | -------- |
+| code          | A string used in the resource  names | Random string to avoid resource conflicts. `uniqueString` Based on the Subscription Id and Location |
+| adminUsername | Admin Username for the Virtual Machine | vmadmin |
+| adminPassword | Password for the Virtual Machine | Prompts during deployment |
+| location      | Location to deploy the resources. The location specified in the `az deployment` command does not control the location of the resources. It is the location of the Azure Deployment | eastus |
+| vmSize        | Size of the Virtual Machine | Standard_DS2_v2 |
+| tags          | Tags that are attached to the resources created | DeployedOn |
+
 # How to download WireGuard Client Configuration files ?
 - The client configuration files are named wg0-client-1.conf, wg0-client-2.conf, ..., wg0-client-9.conf and wg0-client-10.conf.
 - They are located in the administrator users home folder (~/).
 - You can use tools like scp and pscp to download the client configuration files directly from the server.
     
-    scp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf /local/dir/
+    `scp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf /local/dir/`
     
-    pscp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf c:\local\
+    `pscp &lt;admin-user&gt;@&lt;server-fqdn&gt;:/home/&lt;admin-user&gt;/wg0-client-1.conf c:\local\`
 
     Example: 
 
-	scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/
+	`scp vmadmin@awgyj5lzwixbj3ng.westus.cloudapp.azure.com:/home/vmadmin/wg0-client* /local/dir/`
 
 # Windows Clients
 - The client configuration files generated have Linux Line Endings (LF) while Windows WireGuard clients would expect DOS Line Endings (CRLF).
@@ -104,7 +106,7 @@ NOTE: Be sure to pull the latest from "upstream" before making a pull request!
 [ubuntu]: https://www.ubuntu.com/server
 [azure-arm]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/overview
 [git-repo]: https://github.com/vijayshinva/AzureWireGuard
-[git-repo-retired]: https://github.com/vijayshinva/AzureWireGuard
+[git-repo-retired]: https://github.com/vijayshinva/AzureWireGuard/tree/arm-retired
 [azure-bicep-whatif]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deploy-what-if
 [azure-bicep-ps]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deploy-powershell
 [azure-bicep-cli]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deploy-cli

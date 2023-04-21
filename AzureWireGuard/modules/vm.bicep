@@ -6,20 +6,20 @@ param adminUsername string
 @secure()
 param adminPassword string
 
-resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
-  name: 'vnet=wp-${code}'
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
+  name: 'vnet-wg-${code}'
 }
 
 resource snet 'Microsoft.Network/virtualNetworks/subnets@2022-09-01' existing = {
   name: 'snet-wg-${code}'
-  parent: vnet
+  parent: virtualNetwork
 }
 
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-01' existing = {
   name: 'nsg-wg-${code}'
 }
 
-resource pip 'Microsoft.Network/publicIPAddresses@2022-09-01' = {
+resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2022-09-01' = {
   name: 'pip-wg-${code}'
   location: location
   tags: tags
@@ -31,7 +31,7 @@ resource pip 'Microsoft.Network/publicIPAddresses@2022-09-01' = {
   }
 }
 
-resource nic 'Microsoft.Network/networkInterfaces@2022-07-01' = {
+resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
   name: 'nic-wg-${code}'
   location: location
   tags: tags
@@ -43,6 +43,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2022-07-01' = {
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: snet.id
+          }
+          publicIPAddress: {
+            id: publicIPAddress.id
           }
         }
       }
@@ -71,7 +74,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = {
       imageReference: {
         publisher: 'Canonical'
         offer: '0001-com-ubuntu-server-jammy'
-        sku: '22_04-lts'
+        sku: '22_04-lts-gen2'
         version: 'latest'
       }
       osDisk: {
@@ -81,6 +84,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = {
           storageAccountType: 'StandardSSD_LRS'
         }
         deleteOption: 'Delete'
+        diskSizeGB: 64
       }
     }
     securityProfile: {
@@ -93,12 +97,17 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = {
     networkProfile: {
       networkInterfaces: [
         {
-          id: nic.id
+          id: networkInterface.id
           properties: {
             deleteOption: 'Delete'
           }
         }
       ]
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
     }
   }
 }
@@ -118,4 +127,4 @@ resource runCmd 'Microsoft.Compute/virtualMachines/runCommands@2022-11-01' = {
 
 output id string = vm.id
 output name string = vm.name
-output fqdn string = pip.properties.dnsSettings.fqdn
+output fqdn string = publicIPAddress.properties.dnsSettings.fqdn
