@@ -6,7 +6,7 @@ The quickest way to setup your own modern VPN server.
 # What does this Azure Bicep template do ?
 - Create an [Azure Resource Group][azure-rg]. The name of all resources are generated automatically to avoid any conflicts.
 - Create an [Ubuntu Server][ubuntu] Virtual Machine.
-    - You will be prompted for a password during the setup. The default admin name is `vmadmin`
+    - You will be prompted for a password during the deployment.
 - A [Network Security Group][azure-nsg] with firewall rules is attached to the Virtual Machine.
     - Port 51820 is enabled for WireGuard
     - Port 22 is enabled for SSH. Disable this port once you download the config files and enable it only for maintenance.
@@ -26,7 +26,6 @@ The quickest way to setup your own modern VPN server.
 - Schedule a Reboot after 24 hours, to ensure all Ubuntu Server Upgrades are applied.
 
 # How to deploy ?
-
 Some knowledge of how [Azure Bicep templates][azure-bicep] work is really helpful.
 
 ## Method 1 - From [Azure CLI][azure-bicep-cli]
@@ -57,14 +56,14 @@ Some knowledge of how [Azure Bicep templates][azure-bicep] work is really helpfu
 
 - The template parameters available for customization are
 
-| Parameter | Description | Defaults |
-| --------- | ----------- | -------- |
-| code          | A string used in the resource  names | Random string to avoid resource conflicts. `uniqueString` Based on the Subscription Id and Location |
-| adminUsername | Admin Username for the Virtual Machine | vmadmin |
-| adminPassword | Password for the Virtual Machine | Prompts during deployment |
-| location      | Location to deploy the resources. The location specified in the `az deployment` command does not control the location of the resources. It is the location of the Azure Deployment | eastus |
-| vmSize        | Size of the Virtual Machine | Standard_DS2_v2 |
-| tags          | Tags that are attached to the resources created | DeployedOn |
+    | Parameter | Description | Defaults |
+    | --------- | ----------- | -------- |
+    | code          | A string used in the resource  names | Random string to avoid resource conflicts. `uniqueString` Based on the Subscription Id and Location |
+    | adminUsername | Admin Username for the Virtual Machine | vmadmin |
+    | adminPassword | Password for the Virtual Machine | Prompts during deployment |
+    | location      | Location to deploy the resources. The location specified in the `az deployment` command does not control the location of the resources. It is the location of the Azure Deployment | eastus |
+    | vmSize        | Size of the Virtual Machine | Standard_DS2_v2 |
+    | tags          | Tags that are attached to the resources created | DeployedOn |
 
 # How to download WireGuard Client Configuration files ?
 - The client configuration files are named wg0-client-1.conf, wg0-client-2.conf, ..., wg0-client-9.conf and wg0-client-10.conf.
@@ -83,12 +82,12 @@ Some knowledge of how [Azure Bicep templates][azure-bicep] work is really helpfu
 - The client configuration files generated have Linux Line Endings (LF) while Windows WireGuard clients would expect DOS Line Endings (CRLF).
 
 # General Recommendations
+- While editing the AzureWireGuard.sh script file on Windows use Linux EOL. Windows EOL will cause script failure.
 - Recommended to have a VM with atleast two cores.
 - Once the configuration files are downloaded, you can disable the SSH port 22 on the Azure Network Security Group for added security.
 - [Azure Accelerated Networking][azure-accelerated-nw] is enabled by default for better network performance, this limits the choice of Azure VM sizes.
 
 # Azure ARM Version
-
 The earlier version of AzureWireGuard used [Azure ARM templates][azure-arm]. It is no longer maintained but is available on the branch named [arm-retired][git-repo-retired]
 
 # Contributing

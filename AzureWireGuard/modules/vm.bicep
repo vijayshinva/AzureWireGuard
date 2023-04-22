@@ -129,7 +129,6 @@ resource runCmd 'Microsoft.Compute/virtualMachines/runCommands@2022-11-01' = {
         value: adminUsername
       }
     ]
-    runAsUser: 'root'
     source: {
       script: loadTextContent('../scripts/AzureWireGuard.sh')
     }
