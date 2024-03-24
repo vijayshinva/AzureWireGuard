@@ -10,7 +10,6 @@ sed -i -e 's/#net.ipv6.conf.all.forwarding.*/net.ipv6.conf.all.forwarding=1/g' /
 sysctl -p
 
 ## Install WireGurard
-add-apt-repository ppa:wireguard/wireguard -y 
 apt-get update -y 
 apt-get install linux-headers-$(uname -r) -y
 apt-get install wireguard -y
@@ -291,6 +290,7 @@ EOF
 chmod go+r /home/$2/wg0-client-10.conf
 
 ## Firewall 
+ufw route allow in on wg0 out on eth0
 ufw allow 51820/udp
 ufw allow 22/tcp
 ufw enable
