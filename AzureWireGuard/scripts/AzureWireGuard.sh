@@ -64,8 +64,16 @@ Address = 10.13.13.1/24
 SaveConfig = true
 PrivateKey = $server_private_key
 ListenPort = 51820
-PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; ip6tables -A FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; ip6tables -D FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostUp = ufw route allow in on wg0 out on eth0
+PostUp = iptables -I FORWARD -i wg0 -j ACCEPT
+PostUp = iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
+PostUp = ip6tables -I FORWARD -i wg0 -j ACCEPT
+PostUp = ip6tables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
+PostDown = ufw route delete allow in on wg0 out on eth0
+PreDown = iptables -D FORWARD -i wg0 -j ACCEPT
+PreDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PreDown = ip6tables -D FORWARD -i wg0 -j ACCEPT
+PreDown = ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 
 [Peer]
 PublicKey =  $client_one_public_key
@@ -292,7 +300,7 @@ chmod go+r /home/$2/wg0-client-10.conf
 ## Firewall 
 ufw route allow in on wg0 out on eth0
 ufw allow 51820/udp
-ufw allow 22/tcp
+ufw allow OpenSSH
 ufw enable
 
 ## WireGuard Service
