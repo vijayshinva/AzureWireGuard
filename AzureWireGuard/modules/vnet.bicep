@@ -2,7 +2,7 @@ param code string
 param location string
 param tags object
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-01' = {
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2023-04-01' = {
   name: 'nsg-wg-${code}'
   location: location
   properties: {
@@ -40,7 +40,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
   tags: tags
 }
 
-resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
+resource vnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   name: 'vnet-wg-${code}'
   location: location
   properties: {

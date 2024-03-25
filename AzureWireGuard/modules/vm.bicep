@@ -6,20 +6,20 @@ param adminUsername string
 @secure()
 param adminPassword string
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' existing = {
   name: 'vnet-wg-${code}'
 }
 
-resource snet 'Microsoft.Network/virtualNetworks/subnets@2022-09-01' existing = {
+resource snet 'Microsoft.Network/virtualNetworks/subnets@2023-04-01' existing = {
   name: 'snet-wg-${code}'
   parent: virtualNetwork
 }
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-01' existing = {
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2023-04-01' existing = {
   name: 'nsg-wg-${code}'
 }
 
-resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2022-09-01' = {
+resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
   name: 'pip-wg-${code}'
   location: location
   tags: tags
@@ -31,7 +31,7 @@ resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2022-09-01' = {
   }
 }
 
-resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
+resource networkInterface 'Microsoft.Network/networkInterfaces@2023-04-01' = {
   name: 'nic-wg-${code}'
   location: location
   tags: tags
@@ -51,13 +51,14 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
       }
     ]
     enableAcceleratedNetworking: true
+    enableIPForwarding: true
     networkSecurityGroup: {
       id: networkSecurityGroup.id
     }
   }
 }
 
-resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-11-01' = {
+resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-09-01' = {
   name: 'vm-wg-${code}'
   location: location
   tags: tags
@@ -112,7 +113,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-11-01' = {
   }
 }
 
-resource runCmd 'Microsoft.Compute/virtualMachines/runCommands@2022-11-01' = {
+resource runCmd 'Microsoft.Compute/virtualMachines/runCommands@2023-09-01' = {
   name: 'run-wg-${code}'
   location: location
   tags: tags
