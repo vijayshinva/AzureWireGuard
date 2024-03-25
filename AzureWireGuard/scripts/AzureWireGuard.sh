@@ -14,6 +14,9 @@ apt-get update -y
 apt-get install linux-headers-$(uname -r) -y
 apt-get install wireguard -y
 
+## BugFix : /usr/bin/wg-quick: line 32: resolvconf: command not found
+ln -s /usr/bin/resolvectl /usr/local/bin/resolvconf
+
 ## Configure WireGuard
 
 # Generate security keys
@@ -60,7 +63,7 @@ client_ten_public_key=$(</home/$2/WireGuardSecurityKeys/client_ten_public_key)
 # Server Config
 cat > /etc/wireguard/wg0.conf << EOF
 [Interface]
-Address = 10.13.13.1/24
+Address = 10.13.31.1/24
 SaveConfig = true
 PrivateKey = $server_private_key
 ListenPort = 51820
@@ -74,63 +77,64 @@ PreDown = iptables -D FORWARD -i wg0 -j ACCEPT
 PreDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 PreDown = ip6tables -D FORWARD -i wg0 -j ACCEPT
 PreDown = ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+DNS = 1.1.1.1
 
 [Peer]
 PublicKey =  $client_one_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.101/32
+AllowedIps = 10.13.31.101/32
 
 [Peer]
 PublicKey =  $client_two_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.102/32
+AllowedIps = 10.13.31.102/32
 
 [Peer]
 PublicKey =  $client_three_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.103/32
+AllowedIps = 10.13.31.103/32
 
 [Peer]
 PublicKey =  $client_four_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.104/32
+AllowedIps = 10.13.31.104/32
 
 [Peer]
 PublicKey =  $client_five_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.105/32
+AllowedIps = 10.13.31.105/32
 
 [Peer]
 PublicKey =  $client_six_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.106/32
+AllowedIps = 10.13.31.106/32
 
 [Peer]
 PublicKey =  $client_seven_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.107/32
+AllowedIps = 10.13.31.107/32
 
 [Peer]
 PublicKey =  $client_eight_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.108/32
+AllowedIps = 10.13.31.108/32
 
 [Peer]
 PublicKey =  $client_nine_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.109/32
+AllowedIps = 10.13.31.109/32
 
 [Peer]
 PublicKey =  $client_ten_public_key
 PresharedKey = $preshared_key
-AllowedIps = 10.13.13.110/32
+AllowedIps = 10.13.31.110/32
 EOF
 
 # Client Configs
 cat > /home/$2/wg0-client-1.conf << EOF
 [Interface]
 PrivateKey = $client_one_private_key
-Address = 10.13.13.101/32
+Address = 10.13.31.101/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -147,7 +151,7 @@ chmod go+r /home/$2/wg0-client-1.conf
 cat > /home/$2/wg0-client-2.conf << EOF
 [Interface]
 PrivateKey = $client_two_private_key
-Address = 10.13.13.102/32
+Address = 10.13.31.102/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -164,7 +168,7 @@ chmod go+r /home/$2/wg0-client-2.conf
 cat > /home/$2/wg0-client-3.conf << EOF
 [Interface]
 PrivateKey = $client_three_private_key
-Address = 10.13.13.103/32
+Address = 10.13.31.103/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -181,7 +185,7 @@ chmod go+r /home/$2/wg0-client-3.conf
 cat > /home/$2/wg0-client-4.conf << EOF
 [Interface]
 PrivateKey = $client_four_private_key
-Address = 10.13.13.104/32
+Address = 10.13.31.104/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -198,7 +202,7 @@ chmod go+r /home/$2/wg0-client-4.conf
 cat > /home/$2/wg0-client-5.conf << EOF
 [Interface]
 PrivateKey = $client_five_private_key
-Address = 10.13.13.105/32
+Address = 10.13.31.105/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -215,7 +219,7 @@ chmod go+r /home/$2/wg0-client-5.conf
 cat > /home/$2/wg0-client-6.conf << EOF
 [Interface]
 PrivateKey = $client_six_private_key
-Address = 10.13.13.106/32
+Address = 10.13.31.106/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -232,7 +236,7 @@ chmod go+r /home/$2/wg0-client-6.conf
 cat > /home/$2/wg0-client-7.conf << EOF
 [Interface]
 PrivateKey = $client_seven_private_key
-Address = 10.13.13.107/32
+Address = 10.13.31.107/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -249,7 +253,7 @@ chmod go+r /home/$2/wg0-client-7.conf
 cat > /home/$2/wg0-client-8.conf << EOF
 [Interface]
 PrivateKey = $client_eight_private_key
-Address = 10.13.13.108/32
+Address = 10.13.31.108/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -266,7 +270,7 @@ chmod go+r /home/$2/wg0-client-8.conf
 cat > /home/$2/wg0-client-9.conf << EOF
 [Interface]
 PrivateKey = $client_nine_private_key
-Address = 10.13.13.109/32
+Address = 10.13.31.109/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -283,7 +287,7 @@ chmod go+r /home/$2/wg0-client-9.conf
 cat > /home/$2/wg0-client-10.conf << EOF
 [Interface]
 PrivateKey = $client_ten_private_key
-Address = 10.13.13.110/32
+Address = 10.13.31.110/32
 DNS = 1.1.1.1
 
 [Peer]
@@ -298,9 +302,9 @@ EOF
 chmod go+r /home/$2/wg0-client-10.conf
 
 ## Firewall 
-ufw route allow in on wg0 out on eth0
 ufw allow 51820/udp
 ufw allow OpenSSH
+ufw disable
 ufw enable
 
 ## WireGuard Service
